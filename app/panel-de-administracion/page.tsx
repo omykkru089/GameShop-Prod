@@ -386,16 +386,17 @@ function showNotification(msg: string, type: "success" | "error") {
 
     // --- IGNORAR CAMPOS RELACIONADOS SI NO HAN CAMBIADO ---
     if (activeTab === 'juegos') {
-      ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
-        // Si el valor es un objeto (no string) o es igual al original, elimínalo
-        if (
-          typeof formattedItem[rel] !== 'string' ||
-          (selectedItem && formattedItem[rel] === selectedItem[rel])
-        ) {
-          delete formattedItem[rel];
-        }
-      });
+  ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
+    // Si el valor es un string (id) y es diferente al id original, lo dejamos.
+    // Si no es string (no ha cambiado) o es igual al original, lo quitamos.
+    if (
+      typeof formattedItem[rel] !== 'string' ||
+      (selectedItem && typeof formattedItem[rel] === 'string' && Number(formattedItem[rel]) === Number(selectedItem[rel]?.id))
+    ) {
+      delete formattedItem[rel];
     }
+  });
+}
 
     if (activeTab === 'users' && formattedItem.password) {
       formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
