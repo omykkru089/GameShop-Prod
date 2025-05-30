@@ -23,8 +23,12 @@ export default function PagoExitosoPage() {
     if (userId) {
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/pagos/asignar-claves`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json" 
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ userId }),
+        
       })
         .then((res) => res.json())
         .then((data) => setClaves(data))
