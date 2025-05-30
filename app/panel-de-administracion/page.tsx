@@ -387,10 +387,12 @@ function showNotification(msg: string, type: "success" | "error") {
     // --- IGNORAR CAMPOS RELACIONADOS SI NO HAN CAMBIADO ---
 if (activeTab === 'juegos') {
   ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
-    // Solo envía el campo si el usuario ha seleccionado un nuevo valor (string y distinto al id original)
+    // Si el valor es string (id) y distinto al original, lo dejamos.
+    // Si es objeto (no tocado) o igual al id original, lo quitamos.
+    const originalId = selectedItem?.[rel]?.id ?? selectedItem?.[rel];
     if (
       typeof formattedItem[rel] !== 'string' ||
-      (selectedItem && typeof formattedItem[rel] === 'string' && String(formattedItem[rel]) === String(selectedItem[rel]?.id))
+      (typeof formattedItem[rel] === 'string' && String(formattedItem[rel]) === String(originalId))
     ) {
       delete formattedItem[rel];
     }
