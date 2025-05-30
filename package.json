@@ -1,0 +1,63 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "prettier": "prettier --write --ignore-unknown .",
+    "prettier:check": "prettier --check --ignore-unknown .",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@auth/core": "^0.34.2",
+    "@heroicons/react": "^2.0.18",
+    "@heroui/dropdown": "^2.3.19",
+    "@heroui/react": "^2.7.8",
+    "@justinribeiro/lite-youtube": "^1.6.0",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@stripe/stripe-js": "^7.3.0",
+    "@tailwindcss/forms": "^0.5.7",
+    "@types/node": "20.5.7",
+    "@vercel/postgres": "^0.10.0",
+    "autoprefixer": "10.4.15",
+    "bcryptjs": "^3.0.2",
+    "bootstrap": "^5.3.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.0.0",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.477.0",
+    "next": "^14.0.2",
+    "next-auth": "^4.24.7",
+    "next-cloudinary": "^6.16.0",
+    "papaparse": "^5.5.3",
+    "postcss": "8.4.31",
+    "react": "18.2.0",
+    "react-content-loader": "^7.0.2",
+    "react-dom": "18.2.0",
+    "react-icons": "^5.5.0",
+    "sharp": "^0.34.2",
+    "tailwind-merge": "^3.0.2",
+    "tailwindcss": "3.4.3",
+    "typescript": "5.2.2",
+    "zod": "^3.22.2"
+  },
+  "devDependencies": {
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@types/bcrypt": "^5.0.1",
+    "@types/js-cookie": "^3.0.6",
+    "@types/papaparse": "^5.3.16",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.14",
+    "@types/swagger-ui-react": "^5.18.0",
+    "@vercel/style-guide": "^5.0.1",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.52.0",
+    "eslint-config-next": "^14.0.0",
+    "eslint-config-prettier": "9.0.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "0.5.4"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

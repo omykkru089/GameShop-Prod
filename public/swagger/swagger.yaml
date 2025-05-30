@@ -1,0 +1,1076 @@
+openapi: 3.0.0
+info:
+  title: GameShop API
+  description: Intefaz de Administracion de la API con una cuenta con el Rol de Administrador
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3001/api
+    description: Local option, for development
+  - url: http://staging-api.example.com
+    description: Public option (when its uploaded to the internet)
+
+paths: 
+  
+  /users: 
+      
+    get: 
+      tags: 
+        - users
+      summary: Devuelve una lista de todos los usuarios.
+      responses:
+        "200": # status code
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  email: 
+                    type: string,
+                    format: email
+                  password:
+                    type: string
+                  role: 
+                    type: string,
+                    enum: [user, admin]
+                required: [email]
+    post: 
+        tags: 
+        - users
+        summary: Crear un Usuario nuevo (RAW),
+        requestBody: 
+          required: true,
+          content:
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  email: 
+                    type: string,
+                    format: email
+                  password:
+                    type: string
+                  role: 
+                    type: string,
+                    enum: [user, admin]
+                required: [email]
+        responses:
+          "200": 
+            description: User created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre:
+                    type: string
+                  email:
+                    type: string
+                  password:
+                    type: string
+                  role:
+                    type: string
+          "400": 
+            description: Invalid request data
+  /users/{id}:
+    get:
+      tags: 
+        - users
+      summary: Devuelve la informacion de un Usuario.
+      parameters: 
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  email: 
+                    type: string
+                  password:
+                    type: string
+                  role: 
+                    type: string
+                    enum: [user, admin]
+    patch: 
+        tags: 
+        - users
+        summary: Modificar Usuario existente,
+        parameters: 
+            - name: id
+              in: path
+              description: User ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  email: 
+                    type: string,
+                    format: email
+                  password:
+                    type: string
+                  role: 
+                    type: string,
+                    enum: [user, admin]
+                required: [email]
+        responses: 
+          "200": 
+            description: User updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  email: 
+                    type: string
+                  password:
+                    type: string
+                  role: 
+                    type: string
+                    enum: [user, admin]
+          "404": 
+            description: User not found
+    delete:
+      tags: 
+        - users
+      summary: Borrar un usuario especifico
+      parameters: 
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: Usuario borrado exitosamente
+        "400":
+          description: No se ha podido borrar el usuario
+          
+  /categorias: 
+    get: 
+      tags: 
+        - categorias
+      summary: Devuelve una lista de todas las Categorias.
+      responses:
+        "200": # status code
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string,
+    post: 
+        tags: 
+        - categorias
+        summary: Crear una Categoria nueva (RAW),
+        requestBody: 
+          required: true,
+          content:
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+        responses:
+          "200": 
+            description: Category created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+          "400": 
+            description: Invalid request data
+  /categorias/{id}:
+    get:
+      tags: 
+        - categorias
+      summary: Devuelve la informacion de una Categoria.
+      parameters: 
+        - name: id
+          in: path
+          description: Category ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of categories names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+    patch: 
+        tags: 
+        - categorias
+        summary: Modificar Categoria existente,
+        parameters: 
+            - name: id
+              in: path
+              description: Cattegory ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+        responses: 
+          "200": 
+            description: Category updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+          "404": 
+            description: Category not found
+    delete:
+      tags: 
+        - categorias
+      summary: Borrar una categoria especifica
+      parameters: 
+        - name: id
+          in: path
+          description: Category ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: Categoria borrada exitosamente
+        "400":
+          description: No se ha podido borrar la categoria
+
+  /plataformas: 
+    get:
+      tags: 
+        - plataformas
+      summary: Devuelve una lista de todos las plataformas.
+      responses:
+        "200": # status code
+          description: A JSON array of plataforms names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+    post: 
+        tags: 
+        - plataformas
+        summary: Crear una Plataforma nueva (RAW),
+        requestBody: 
+          required: true,
+          content:
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+        responses:
+          "200": 
+            description: Plataform created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+          "400": 
+            description: Invalid request data
+  /plataformas/{id}:
+    get:
+      tags: 
+        - plataformas
+      summary: Devuelve la informacion de una Plataforma.
+      parameters: 
+        - name: id
+          in: path
+          description: Plataform ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of plataforms names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+    patch: 
+        tags: 
+        - plataformas
+        summary: Modificar Plataforma existente,
+        parameters: 
+            - name: id
+              in: path
+              description: Plataform ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+        responses: 
+          "200": 
+            description: Plataform updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  fundador: 
+                    type: string
+                  anio_de_lanzamiento: 
+                    type: string
+                  tipos_de_medios_compatibles: 
+                    type: string
+          "404": 
+            description: plataform not found
+    delete:
+      tags: 
+        - plataformas
+      summary: Borrar una plataforma especifica
+      parameters: 
+        - name: id
+          in: path
+          description: Plataform ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: plataforma borrada exitosamente
+        "400":
+          description: No se ha podido borrar la plataforma
+      
+  /editoriales: 
+    get:
+      tags: 
+        - editoriales
+      summary: Devuelve una lista de todos las editoriales.
+      responses:
+        "200": # status code
+          description: A JSON array of editorials names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+    post: 
+        tags: 
+        - editoriales
+        summary: Crear una Editorial nueva (RAW),
+        requestBody: 
+          required: true,
+          content:
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+        responses:
+          "200": 
+            description: Editorial created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+          "400": 
+            description: Invalid request data
+  /editoriales/{id}:
+    get:
+      tags: 
+        - editoriales
+      summary: Devuelve la informacion de una Editorial.
+      parameters: 
+        - name: id
+          in: path
+          description: Editorial ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of editorials names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+    patch: 
+        tags: 
+        - editoriales
+        summary: Modificar Editorial existente,
+        parameters: 
+            - name: id
+              in: path
+              description: Editorial ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+        responses: 
+          "200": 
+            description: Editorial updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+          "404": 
+            description: editorial not found
+    delete:
+      tags: 
+        - editoriales
+      summary: Borrar una editorial especifica
+      parameters: 
+        - name: id
+          in: path
+          description: Editorial ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: editorial borrada exitosamente
+        "400":
+          description: No se ha podido borrar la editorial
+
+  /desarrolladores: 
+    get:
+      tags: 
+        - desarrolladores
+      summary: Devuelve una lista de todos los desarrolladores.
+      responses:
+        "200": # status code
+          description: A JSON array of developers names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+    post: 
+        tags: 
+        - desarrolladores
+        summary: Crear un desarrollador nueva (RAW),
+        requestBody: 
+          required: true,
+          content:
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+        responses:
+          "200": 
+            description: Developer created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+          "400": 
+            description: Invalid request data
+  /desarrolladores/{id}:
+    get:
+      tags: 
+        - desarrolladores
+      summary: Devuelve la informacion de un Desarrollador.
+      parameters: 
+        - name: id
+          in: path
+          description: Developer ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of developers names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+    patch: 
+        tags: 
+        - desarrolladores
+        summary: Modificar Desarrollador existente,
+        parameters: 
+            - name: id
+              in: path
+              description: Developers ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+        responses: 
+          "200": 
+            description: Developers updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  pais_origen: 
+                    type: string
+                  anio_fundacion: 
+                    type: string
+                  sitio_web: 
+                    type: string
+          "404": 
+            description: Developer not found
+    delete:
+      tags: 
+        - desarrolladores
+      summary: Borrar un desarrollador especifica
+      parameters: 
+        - name: id
+          in: path
+          description: Developer ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: desarrollador borrada exitosamente
+        "400":
+          description: No se ha podido borrar el desarrollador
+  
+  /juegos: 
+    get:
+      tags: 
+        - juegos
+      summary: Devuelve una lista de todos los juegos.
+      responses:
+        "200": # status code
+          description: A JSON array of games names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  precio: 
+                    type: string
+                  fecha_de_lanzamiento: 
+                    type: string
+                  clasificacion_por_edad: 
+                    type: string
+                  idiomas: 
+                    type: string
+                  imagen_de_portada: 
+                    type: string
+                  video: 
+                    type: string
+                  requisitos_del_sistema: 
+                    type: string
+                  popularidad: 
+                    type: string
+                  link: 
+                    type: string
+                  categoria: 
+                    type: string
+                  plataforma: 
+                    type: string
+                  editorial: 
+                    type: string
+                  desarrollador: 
+                    type: string
+    post:
+      security:
+        - bearerAuth: []
+      tags: 
+        - juegos 
+      summary: Crear un juego nueva (RAW),
+      requestBody: 
+        required: true,
+        content:
+          application/json: 
+            schema: 
+              type: object # Data type
+              properties:
+                nombre: 
+                  type: string
+                descripcion: 
+                  type: string
+                precio: 
+                  type: string
+                fecha_de_lanzamiento: 
+                  type: string
+                clasificacion_por_edad: 
+                  type: string
+                idiomas: 
+                  type: string
+                imagen_de_portada: 
+                  type: string
+                video: 
+                  type: string
+                requisitos_del_sistema: 
+                  type: string
+                popularidad: 
+                  type: string
+                link: 
+                  type: string
+                categoria: 
+                  type: string
+                plataforma: 
+                  type: string
+                editorial: 
+                  type: string
+                desarrollador: 
+                  type: string
+        responses:
+          "200": 
+            description: Game created successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: object # Data type
+                properties:
+                  id:
+                    type: number
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  precio: 
+                    type: string
+                  fecha_de_lanzamiento: 
+                    type: string
+                  clasificacion_por_edad: 
+                    type: string
+                  idiomas: 
+                    type: string
+                  imagen_de_portada: 
+                    type: string
+                  video: 
+                    type: string
+                  requisitos_del_sistema: 
+                    type: string
+                  popularidad: 
+                    type: string
+                  link: 
+                    type: string
+                  categoria: 
+                    type: string
+                  plataforma: 
+                    type: string
+                  editorial: 
+                    type: string
+                  desarrollador: 
+                    type: string
+          "400": 
+            description: Invalid request data
+  /juegos/{id}:
+    get:
+      tags: 
+        - juegos
+      summary: Devuelve la informacion de un Juego.
+      parameters: 
+        - name: id
+          in: path
+          description: Game ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: A JSON array of game names
+          content:
+            application/json:
+              schema:
+                type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  precio: 
+                    type: string
+                  fecha_de_lanzamiento: 
+                    type: string
+                  clasificacion_por_edad: 
+                    type: string
+                  idiomas: 
+                    type: string
+                  imagen_de_portada: 
+                    type: string
+                  video: 
+                    type: string
+                  requisitos_del_sistema: 
+                    type: string
+                  popularidad: 
+                    type: string
+                  link: 
+                    type: string
+                  categoria: 
+                    type: string
+                  plataforma: 
+                    type: string
+                  editorial: 
+                    type: string
+                  desarrollador: 
+                    type: string
+    patch: 
+        tags: 
+        - juegos
+        summary: Modificar juego existente,
+        parameters: 
+            - name: id
+              in: path
+              description: Game ID
+              required: true
+              schema:
+                type: integer
+        requestBody: 
+          required: true,
+          content: 
+            application/json: 
+              schema: 
+                type: object # Data type
+                properties:
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  precio: 
+                    type: string
+                  fecha_de_lanzamiento: 
+                    type: string
+                  clasificacion_por_edad: 
+                    type: string
+                  idiomas: 
+                    type: string
+                  imagen_de_portada: 
+                    type: string
+                  video: 
+                    type: string
+                  requisitos_del_sistema: 
+                    type: string
+                  popularidad: 
+                    type: string
+                  link: 
+                    type: string
+                  categoria: 
+                    type: string
+                  plataforma: 
+                    type: string
+                  editorial: 
+                    type: string
+                  desarrollador: 
+                    type: string
+        responses: 
+          "200": 
+            description: Game updated successfully,
+            content: 
+              application/json: 
+                schema: 
+                  type: array # Data type
+                properties: 
+                  nombre: 
+                    type: string
+                  descripcion: 
+                    type: string
+                  precio: 
+                    type: string
+                  fecha_de_lanzamiento: 
+                    type: string
+                  clasificacion_por_edad: 
+                    type: string
+                  idiomas: 
+                    type: string
+                  imagen_de_portada: 
+                    type: string
+                  video: 
+                    type: string
+                  requisitos_del_sistema: 
+                    type: string
+                  popularidad: 
+                    type: string
+                  link: 
+                    type: string
+                  categoria: 
+                    type: string
+                  plataforma: 
+                    type: string
+                  editorial: 
+                    type: string
+                  desarrollador: 
+                    type: string
+          "404": 
+            description: Game not found
+    delete:
+      tags: 
+        - juegos
+      summary: Borrar un juegos especifica
+      parameters: 
+        - name: id
+          in: path
+          description: Game ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200": # status code
+          description: juego borrada exitosamente
+        "400":
+          description: No se ha podido borrar el juego
+
+
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
