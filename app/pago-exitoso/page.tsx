@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Header } from "../ui/header";
 import { Footer } from "../ui/footer";
 
@@ -9,6 +10,8 @@ export default function PagoExitosoPage() {
   const [claves, setClaves] = useState<ClavesPorJuego>({});
   const [juegos, setJuegos] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+    const { data: session } = useSession(); // Añade esto
+
 
   // Cargar todos los juegos al montar la página
   useEffect(() => {
