@@ -388,7 +388,7 @@ function showNotification(msg: string, type: "success" | "error") {
     if (activeTab === 'juegos') {
   ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
     // Si el valor es un string (id) y es diferente al id original, lo dejamos.
-    // Si no es string (no ha cambiado) o es igual al original, lo quitamos.
+    // Si no es string (es objeto, null, undefined) o es igual al id original, lo quitamos.
     if (
       typeof formattedItem[rel] !== 'string' ||
       (selectedItem && typeof formattedItem[rel] === 'string' && Number(formattedItem[rel]) === Number(selectedItem[rel]?.id))
