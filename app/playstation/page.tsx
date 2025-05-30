@@ -18,7 +18,7 @@ export default function PlayStationPage() {
     const fetchData = async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/juegos`);
       const data: Juego[] = await res.json();
-      const juegosPlayStation = data.filter((juego: Juego) => juego.dispositivo === "Playstation");
+      const juegosPlayStation = data.filter((juego: Juego) => juego.dispositivo === "PlayStation");
       setJuegos(juegosPlayStation);
 
       const plataformasPlayStation = Array.from(
