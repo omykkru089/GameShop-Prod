@@ -28,6 +28,31 @@ const Page = () => {
   const [desarrolladores, setDesarrolladores] = useState<desarrollador[]>([]);
   
 
+useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!session?.user?.token) return;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+          },
+        });
+        if (!res.ok) {
+          setUser(null);
+          return;
+        }
+        const currentUser = await res.json();
+        setUser(currentUser || null);
+      } catch (err) {
+        setUser(null);
+      }
+    };
+
+    if (session) {
+      fetchUser();
+    }
+  }, [session]);
+
   // Notificación simple (puedes mejorarla con un modal o toast)
 function showNotification(msg: string, type: "success" | "error") {
   alert(`${type === "success" ? "✔️" : "❌"} ${msg}`);
