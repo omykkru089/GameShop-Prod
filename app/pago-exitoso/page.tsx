@@ -20,6 +20,8 @@ export default function PagoExitosoPage() {
 
   useEffect(() => {
     const userId = Number(localStorage.getItem("userId") || "1");
+    // Usa el token de sesión de NextAuth
+    const token = session?.user?.token;
     if (userId) {
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/pagos/asignar-claves`, {
         method: "POST",
