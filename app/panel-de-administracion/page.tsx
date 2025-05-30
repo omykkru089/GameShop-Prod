@@ -361,71 +361,69 @@ function showNotification(msg: string, type: "success" | "error") {
   };
 
   const handleEdit = async (updatedItem: any) => {
-    try {
-      if (!activeTab) {
-        throw new Error('No se ha seleccionado una tabla activa');
-      }
-      if (activeTab === 'carrito') {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/carrito/admin/${updatedItem.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user?.token}`,
-          },
-          body: JSON.stringify({ cantidad: updatedItem.cantidad }),
-        });
-        if (!res.ok) {
-          throw new Error('Error al actualizar la cantidad');
-        }
-        const updatedData = await res.json();
-        setData((prevData) =>
-          prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
-        );
-        setIsEditing(false);
-        setEditData(null);
-        return;
-      }
-      const arrayFields = activeTab === 'juegos' ? [
-        'descripcion',
-        'idiomas',
-        'imagen_de_portada',
-        'video',
-        'requisitos_del_sistema',
-        'link',
-      ] : [];
-      const formattedItem = { ...updatedItem };
-      arrayFields.forEach((field) => {
-        if (formattedItem[field] && typeof formattedItem[field] === 'string') {
-          formattedItem[field] = formattedItem[field].split(',').map((item: string) => item.trim());
-        }
-      });
-      if (activeTab === 'users' && formattedItem.password) {
-        formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
-      }
-      const { id, ...dataToSend } = formattedItem;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.token}`,
-        },
-        body: JSON.stringify(dataToSend),
-      });
-      if (!res.ok) {
-        throw new Error('Error al actualizar el registro');
-      }
-      const updatedData = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
-        headers: {
-          Authorization: `Bearer ${session?.user?.token}`,
-        },
-      });
-      const result = await updatedData.json();
-      setData(result);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error al actualizar el registro:', error);
+  try {
+    if (!activeTab) {
+      throw new Error('No se ha seleccionado una tabla activa');
     }
-  };
+    if (activeTab === 'carrito') {
+      // ...tu código de carrito...
+      return;
+    }
+    const arrayFields = activeTab === 'juegos' ? [
+      'descripcion',
+      'idiomas',
+      'imagen_de_portada',
+      'video',
+      'requisitos_del_sistema',
+      'link',
+    ] : [];
+    const formattedItem = { ...updatedItem };
+    arrayFields.forEach((field) => {
+      if (formattedItem[field] && typeof formattedItem[field] === 'string') {
+        formattedItem[field] = formattedItem[field].split(',').map((item: string) => item.trim());
+      }
+    });
+
+    // --- IGNORAR CAMPOS RELACIONADOS SI NO HAN CAMBIADO ---
+    if (activeTab === 'juegos') {
+      ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
+        // Si el valor es un objeto (no string) o es igual al original, elimínalo
+        if (
+          typeof formattedItem[rel] !== 'string' ||
+          (selectedItem && formattedItem[rel] === selectedItem[rel])
+        ) {
+          delete formattedItem[rel];
+        }
+      });
+    }
+
+    if (activeTab === 'users' && formattedItem.password) {
+      formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
+    }
+    const { id, ...dataToSend } = formattedItem;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.user?.token}`,
+      },
+      body: JSON.stringify(dataToSend),
+    });
+    if (!res.ok) {
+      throw new Error('Error al actualizar el registro');
+    }
+    const updatedData = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
+      headers: {
+        Authorization: `Bearer ${session?.user?.token}`,
+      },
+    });
+    const result = await updatedData.json();
+    setData(result);
+    setIsEditing(false);
+  } catch (error) {
+    console.error('Error al actualizar el registro:', error);
+  }
+};
 
   const handleSignOut = async () => {
     await signOut();
