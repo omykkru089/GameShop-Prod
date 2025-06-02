@@ -28,7 +28,8 @@ const Page = () => {
   const [desarrolladores, setDesarrolladores] = useState<desarrollador[]>([]);
   
 
-useEffect(() => {
+
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         if (!session?.user?.token) return;
@@ -52,7 +53,6 @@ useEffect(() => {
       fetchUser();
     }
   }, [session]);
-
   // Notificación simple (puedes mejorarla con un modal o toast)
 function showNotification(msg: string, type: "success" | "error") {
   alert(`${type === "success" ? "✔️" : "❌"} ${msg}`);
@@ -365,50 +365,76 @@ function showNotification(msg: string, type: "success" | "error") {
     if (!activeTab) {
       throw new Error('No se ha seleccionado una tabla activa');
     }
+
     if (activeTab === 'carrito') {
-      // ...tu código de carrito...
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/carrito/admin/${updatedItem.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user?.token}`,
+        },
+        body: JSON.stringify({ cantidad: updatedItem.cantidad }),
+      });
+
+      if (!res.ok) throw new Error('Error al actualizar la cantidad');
+
+      const updatedData = await res.json();
+      setData((prevData) =>
+        prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
+      );
+      setIsEditing(false);
+      setEditData(null);
       return;
     }
-    const arrayFields = activeTab === 'juegos' ? [
-      'descripcion',
-      'idiomas',
-      'imagen_de_portada',
-      'video',
-      'requisitos_del_sistema',
-      'link',
-    ] : [];
+
     const formattedItem = { ...updatedItem };
-    arrayFields.forEach((field) => {
-      if (formattedItem[field] && typeof formattedItem[field] === 'string') {
-        formattedItem[field] = formattedItem[field].split(',').map((item: string) => item.trim());
-      }
-    });
 
-    // NUEVA LÓGICA MEJORADA PARA CAMPOS RELACIONADOS
-      if (activeTab === "juegos") {
-        const relationFields = ["categoria", "plataforma", "editorial", "desarrollador"]
-        const changedFields: any = {}
+    if (activeTab === 'juegos') {
+      // Campos que deben enviarse como string
+      const stringIdFields = ['categoria', 'plataforma', 'editorial', 'desarrollador'];
 
-        relationFields.forEach((field) => {
-          // Obtener el ID original (puede estar en objeto.id o directamente como número)
-          const originalId = selectedItem?.[field]?.id ?? selectedItem?.[field]
-          const newId = formattedItem[field]
+      stringIdFields.forEach((field) => {
+        const value = formattedItem[field];
+        if (value && typeof value === 'object' && value.id !== undefined) {
+          formattedItem[field] = String(value.id);
+        } else if (typeof value === 'number') {
+          formattedItem[field] = String(value);
+        } else if (typeof value === 'string') {
+          // Ya está bien
+        } else {
+          // Si no tiene valor válido, mejor eliminarlo
+          delete formattedItem[field];
+        }
+      });
 
-          // Solo incluir el campo si realmente cambió y no está vacío
-          if (newId && newId !== "" && String(newId) !== String(originalId)) {
-            changedFields[field] = Number(newId)
-          }
-        })
+      // Campos tipo array que vienen como string separados por coma
+      const arrayFields = [
+        'descripcion',
+        'idiomas',
+        'imagen_de_portada',
+        'video',
+        'requisitos_del_sistema',
+        'link',
+      ];
 
-        // Remover los campos relacionados del formattedItem y agregar solo los que cambiaron
-        relationFields.forEach((field) => delete formattedItem[field])
-        Object.assign(formattedItem, changedFields)
-      }
+      arrayFields.forEach((field) => {
+        if (formattedItem[field] && typeof formattedItem[field] === 'string') {
+          formattedItem[field] = formattedItem[field]
+            .split(',')
+            .map((item: string) => item.trim());
+        }
+      });
+    }
 
     if (activeTab === 'users' && formattedItem.password) {
       formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
     }
+
     const { id, ...dataToSend } = formattedItem;
+
+    // DEBUG: Verifica que todo esté en el formato correcto antes del fetch
+    console.log('🟩 Enviando al backend:', JSON.stringify(dataToSend, null, 2));
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}/${id}`, {
       method: 'PATCH',
       headers: {
@@ -417,19 +443,20 @@ function showNotification(msg: string, type: "success" | "error") {
       },
       body: JSON.stringify(dataToSend),
     });
-    if (!res.ok) {
-      throw new Error('Error al actualizar el registro');
-    }
+
+    if (!res.ok) throw new Error('Error al actualizar el registro');
+
     const updatedData = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
       headers: {
         Authorization: `Bearer ${session?.user?.token}`,
       },
     });
+
     const result = await updatedData.json();
     setData(result);
     setIsEditing(false);
   } catch (error) {
-    console.error('Error al actualizar el registro:', error);
+    console.error('❌ Error al actualizar el registro:', error);
   }
 };
 
