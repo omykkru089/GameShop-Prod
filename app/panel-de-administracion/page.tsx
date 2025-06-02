@@ -384,20 +384,26 @@ function showNotification(msg: string, type: "success" | "error") {
       }
     });
 
-    // --- IGNORAR CAMPOS RELACIONADOS SI NO HAN CAMBIADO ---
-if (activeTab === 'juegos') {
-  ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach((rel) => {
-    // Si el valor es string (id) y distinto al original, lo dejamos.
-    // Si es objeto (no tocado) o igual al id original, lo quitamos.
-    const originalId = selectedItem?.[rel]?.id ?? selectedItem?.[rel];
-    if (
-      typeof formattedItem[rel] !== 'string' ||
-      (typeof formattedItem[rel] === 'string' && String(formattedItem[rel]) === String(originalId))
-    ) {
-      delete formattedItem[rel];
-    }
-  });
-}
+    // NUEVA LÓGICA MEJORADA PARA CAMPOS RELACIONADOS
+      if (activeTab === "juegos") {
+        const relationFields = ["categoria", "plataforma", "editorial", "desarrollador"]
+        const changedFields: any = {}
+
+        relationFields.forEach((field) => {
+          // Obtener el ID original (puede estar en objeto.id o directamente como número)
+          const originalId = selectedItem?.[field]?.id ?? selectedItem?.[field]
+          const newId = formattedItem[field]
+
+          // Solo incluir el campo si realmente cambió y no está vacío
+          if (newId && newId !== "" && String(newId) !== String(originalId)) {
+            changedFields[field] = Number(newId)
+          }
+        })
+
+        // Remover los campos relacionados del formattedItem y agregar solo los que cambiaron
+        relationFields.forEach((field) => delete formattedItem[field])
+        Object.assign(formattedItem, changedFields)
+      }
 
     if (activeTab === 'users' && formattedItem.password) {
       formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
