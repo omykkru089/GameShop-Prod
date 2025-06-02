@@ -130,7 +130,8 @@ const SobreMiPage = () => {
                 <span className='hidden sm:inline lg:inline'>Home</span>
               </Link>
               <Link
-                href="#"
+                onClick={handleSignOut}
+                href="/"
                 className='
                   flex items-center text-sm font-semibold hover:bg-[#edd7fd] hover:text-[#A167D8]
                   justify-center p-0 sm:justify-start sm:p-2 sm:px-3 lg:justify-start lg:p-2 lg:px-3
@@ -140,7 +141,7 @@ const SobreMiPage = () => {
                   className="w-8 h-8 sm:w-6 sm:h-6 lg:w-6 lg:h-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15" />
                 </svg>
-                <button onClick={handleSignOut} className='hidden sm:inline lg:inline w-full'>Cerrar Sesión</button>
+                <button  className='hidden sm:inline lg:inline w-full'>Cerrar Sesión</button>
               </Link>
             </nav>
             <section className='
