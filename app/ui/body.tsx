@@ -32,7 +32,7 @@ export function Body({ search }: { search: string }) {
   }, [showNotification]);
 
   if (isLoading) {
-    return <div className='grid place-items-center w-full bg-[#0D0D0D]'><div className='grid  p-[20px] bg-[#1f1f1f] pt-[20px] [box-shadow:0px_15px_20px_#640F8C] z-0 mb-[-40px]'><GameSkeleton/><GameSkeleton/><GameSkeleton/></div></div>;
+    return <div className='grid place-items-center w-full bg-[#0D0D0D]'><GameSkeleton/><GameSkeleton/><GameSkeleton/></div>;
   }
 
   if (!juegos || juegos.length === 0) {
