@@ -12,12 +12,20 @@ const MyLoader = () => (
     foregroundColor="#999"
     uniqueKey="game-skeleton-loader"
   >
-    <rect x="0" y="0" rx="25" ry="25" width="407" height="243" /> 
-    <rect x="0" y="253" rx="15" ry="15" width="200" height="53" /> 
-    <rect x="210" y="253" rx="15" ry="15" width="200" height="53" /> 
-    <rect x="420" y="0" rx="15" ry="15" width="150" height="60" /> 
-    <rect x="420" y="67" rx="15" ry="15" width="150" height="70" /> 
-    <rect x="420" y="145" rx="15" ry="15" width="150" height="160" />
+    {/* Imagen principal (izquierda) */}
+    <rect x="20" y="20" rx="25" ry="25" width="400" height="240" />
+
+    {/* Título */}
+    <rect x="440" y="30" rx="10" ry="10" width="300" height="40" />
+
+    {/* Precio */}
+    <rect x="440" y="90" rx="10" ry="10" width="100" height="40" />
+
+    {/* Tienda */}
+    <rect x="440" y="150" rx="10" ry="10" width="200" height="40" />
+
+    {/* Botón de carrito (abajo, centrado) */}
+    <rect x="300" y="290" rx="20" ry="20" width="200" height="50" />
   </ContentLoader>
 );
 

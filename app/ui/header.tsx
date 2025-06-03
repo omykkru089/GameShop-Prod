@@ -5,6 +5,8 @@ import { signOut, useSession } from "next-auth/react";
 import { Suspense, useEffect, useState, useRef, Dispatch, SetStateAction, } from "react";
 import { useCart } from "@/context/cart-context";
 import UserSkeleton from "./Skeletons/UserSkeleton";
+import SearchNavSkeleton from "./Skeletons/searchnavskeleton"
+import LogoSkeleton from "./Skeletons/logoskeleton"
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button} from "@heroui/react";
 import { useNotification } from "./notification";
 import { useSearch } from "@/context/search-context";
@@ -55,13 +57,20 @@ useEffect(() => {
       tablet:w-24 tablet:h-24 tablet:static
     "
   >
-    <Image
+    {status === "loading" ? (
+      <Suspense>
+        <LogoSkeleton />
+      </Suspense>
+    ) : (
+      <Image
       src="/GameShop.png"
       alt="GameShop Logo"
       width={120}
       height={120}
       className="w-full h-full [transition:all_0.5s] object-cover object-center relative  max-[370px]:left-8  tablet:left-0"
     />
+    )}
+    
   </Link>
 
       {/* Contenedor central: buscador + nav */}
@@ -71,6 +80,14 @@ useEffect(() => {
       
     "
   >
+    {status === "loading" ? (
+      <Suspense>
+        <SearchNavSkeleton />
+      </Suspense>
+    ) : (
+      
+        
+  <>
         {/* Buscador */}
     <div className="relative  [transition:all_0.5s] flex items-center w-full tablet:w-fit tablet:left-0 justify-center mr-2 tablet:mr-0">
           <button
@@ -97,7 +114,7 @@ useEffect(() => {
         </div>
 
         {/* Navigation */}
-<nav
+      <nav
       className="
         relative  max-[370px]:right-12 max-[520px]:right-24 max-[630px]:right-20 max-[759px]:right-12  [transition:all_0.5s]
         col-start-1 col-end-4 row-start-2
@@ -105,7 +122,7 @@ useEffect(() => {
         flex gap-6 bg-[rgba(255,255,255,0.22)] text-white rounded-lg p-2 justify-center
         tablet:static tablet:ml-2 tablet:mr-2 tablet:pl-2 tablet:pr-2 tablet:h-auto tablet:w-auto tablet:gap-3 tablet:mt-0
       "
-    >          <Link href="/pc" className="text-white [transition:all_0.5s] flex gap-2 hover:text-purple-300">
+      >   <Link href="/pc" className="text-white [transition:all_0.5s] flex gap-2 hover:text-purple-300">
             <Image src="/iconPC.png" alt="PC" width={20} height={20} className="w-[16px] h-[16px] max-[370px]:min-h-[24px] max-[370px]:min-w-[24px] relative top-[1px] self-center tablet:h-[20px] tablet:w-[20px]" />
             <span className=" max-[760px]:text-sm max-[370px]:hidden font-bold tablet:font-normal tablet:text-md tablet:inline">PC</span>
           </Link>
@@ -122,7 +139,12 @@ useEffect(() => {
             <span className="max-[760px]:text-sm max-[370px]:hidden font-bold tablet:font-normal tablet:text-md tablet:inline">Nintendo</span>
           </Link>
         </nav>
+        
+      </>
+      
+      )}
       </div>
+
       {/* User Actions */}
 <div
     className="

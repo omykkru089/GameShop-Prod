@@ -2,6 +2,8 @@
 import React from "react"
 import dynamic from "next/dynamic";
 const ContentLoader = dynamic(() => import("react-content-loader"), { ssr: false });
+
+const MyLoader = () => (
 <ContentLoader 
   speed={1}
   width={360}
@@ -17,3 +19,5 @@ const ContentLoader = dynamic(() => import("react-content-loader"), { ssr: false
   {/* Selector de plataformas */}
   <rect x="50" y="0" rx="10" ry="10" width="310" height="40" />
 </ContentLoader>
+);
+export default MyLoader

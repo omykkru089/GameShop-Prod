@@ -2,6 +2,7 @@
 import React from "react"
 import dynamic from "next/dynamic";
 const ContentLoader = dynamic(() => import("react-content-loader"), { ssr: false });
+const MyLoader = () => (
 <ContentLoader 
   speed={1}
   width={120}
@@ -13,3 +14,5 @@ const ContentLoader = dynamic(() => import("react-content-loader"), { ssr: false
 >
   <rect x="0" y="0" rx="8" ry="8" width="120" height="40" />
 </ContentLoader>
+);
+export default MyLoader
