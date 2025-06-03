@@ -179,7 +179,7 @@ if (!data.sessionId) {
 
         <div className="mt-4 text-left text-black flex justify-between items-center">
         <p className="text-xl font-bold">Total: {totalPrice.toFixed(2)}€</p>
-        <button onClick={handleCheckout}>Pagar</button>
+        <button className="bg-green-500 p-2 hover:bg-green-300 [transition:.2s]" onClick={handleCheckout}>Pagar</button>
       </div>
       </div>
     </>
