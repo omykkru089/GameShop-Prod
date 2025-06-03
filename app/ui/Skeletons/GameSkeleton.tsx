@@ -13,19 +13,19 @@ const MyLoader = () => (
     uniqueKey="game-skeleton-loader"
   >
     {/* Imagen principal (izquierda) */}
-    <rect x="20" y="20" rx="25" ry="25" width="400" height="240" />
+    <rect x="0" y="20" rx="25" ry="25" width="400" height="240" />
 
     {/* Título */}
-    <rect x="440" y="30" rx="10" ry="10" width="300" height="40" />
+    <rect x="420" y="30" rx="10" ry="10" width="250" height="50" />
 
     {/* Precio */}
-    <rect x="440" y="90" rx="10" ry="10" width="100" height="40" />
+    <rect x="420" y="90" rx="10" ry="10" width="250" height="50" />
 
     {/* Tienda */}
-    <rect x="440" y="150" rx="10" ry="10" width="200" height="40" />
+    <rect x="420" y="150" rx="10" ry="10" width="250" height="50" />
 
     {/* Botón de carrito (abajo, centrado) */}
-    <rect x="300" y="290" rx="20" ry="20" width="200" height="50" />
+    <rect x="0" y="225" rx="20" ry="20" width="700" height="50" />
   </ContentLoader>
 );
 
