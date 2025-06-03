@@ -11,10 +11,9 @@ export function Footer() {
             {/* Tablet y escritorio */}
             <section className="flex flex-col">
               <ul>
-                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="#" className="hover:[transition:.1s] hover:text-[#9F86C0]">Términos y condiciones</Link></li>
-                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="#" className="hover:[transition:.1s] hover:text-[#9F86C0]">Política de privacidad </Link></li>
-                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="#" className="hover:[transition:.1s] hover:text-[#9F86C0]">Contacto</Link></li>
-                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="#" className="hover:[transition:.1s] hover:text-[#9F86C0]">Programa de afiliación</Link></li>
+                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="/terminos-y-condiciones" className="hover:[transition:.1s] hover:text-[#9F86C0]">Términos y condiciones</Link></li>
+                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="/politica-de-privacidad" className="hover:[transition:.1s] hover:text-[#9F86C0]">Política de privacidad </Link></li>
+                <li className="mb-[10px] w-[200px] p-[5px]"><Link href="/contacto" className="hover:[transition:.1s] hover:text-[#9F86C0]">Contacto</Link></li>
               </ul>
             </section>
             <section className="flex justify-center items-center">
