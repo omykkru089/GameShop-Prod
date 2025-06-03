@@ -12,7 +12,7 @@ const MyLoader = () => (
   foregroundColor="#999"
   uniqueKey="logo-skeleton"
 >
-  <rect x="0" y="0" rx="8" ry="8" width="120" height="40" />
+  <rect x="0" y="30" rx="8" ry="8" width="100" height="40" />
 </ContentLoader>
 );
 export default MyLoader
