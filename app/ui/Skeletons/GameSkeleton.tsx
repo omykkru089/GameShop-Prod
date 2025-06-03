@@ -16,16 +16,16 @@ const MyLoader = () => (
     <rect x="0" y="20" rx="25" ry="25" width="400" height="240" />
 
     {/* Título */}
-    <rect x="405" y="0" rx="10" ry="10" width="250" height="70" />
+    <rect x="405" y="20" rx="10" ry="10" width="250" height="70" />
 
     {/* Precio */}
-    <rect x="405" y="80" rx="10" ry="10" width="250" height="70" />
+    <rect x="405" y="100" rx="10" ry="10" width="250" height="70" />
 
     {/* Tienda */}
-    <rect x="405" y="160" rx="10" ry="10" width="250" height="70" />
+    <rect x="405" y="180" rx="10" ry="10" width="250" height="70" />
 
     {/* Botón de carrito (abajo, centrado) */}
-    <rect x="0" y="245" rx="20" ry="20" width="700" height="50" />
+    <rect x="0" y="270" rx="20" ry="20" width="700" height="40" />
   </ContentLoader>
 );
 
