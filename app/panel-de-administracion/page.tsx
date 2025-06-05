@@ -15,18 +15,26 @@ import type { ParseResult } from 'papaparse';
 const Page = () => {
   const { data: session, status } = useSession();
   const [user, setUser] = useState<users | null>(null);
-  const [activeTab, setActiveTab] = useState('juegos'); // Tab activa
-  const [data, setData] = useState<TableItem[]>([]); // Datos de la tabla activa
-  const [selectedItem, setSelectedItem] = useState<any | null>(null); // Registro seleccionado
-  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda
-  const [isAdding, setIsAdding] = useState(false); // Mostrar formulario de añadir
-  const [isEditing, setIsEditing] = useState(false); // Mostrar formulario de edición
-  const [editData, setEditData] = useState<any | null>(null); // Datos para editar
+  const [activeTab, setActiveTab] = useState('juegos');
+  const [data, setData] = useState<TableItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any | null>(null);
   const [categorias, setCategorias] = useState<categoria[]>([]);
   const [plataformas, setPlataformas] = useState<plataforma[]>([]);
   const [editoriales, setEditoriales] = useState<editorial[]>([]);
   const [desarrolladores, setDesarrolladores] = useState<desarrollador[]>([]);
-  
+  const [allGamesForClaves, setAllGamesForClaves] = useState<GameForDropdown[]>([]); // For clavesjuegos dropdown
+
+  // Define GameForDropdown interface (can be moved to definitions.ts if used elsewhere)
+  interface GameForDropdown {
+    id: number;
+    nombre: string;
+    plataforma?: { id: number; nombre: string };
+    dispositivo?: string; // Añadido para el dropdown de clavesjuegos
+  }
 
 
   useEffect(() => {
@@ -34,24 +42,14 @@ const Page = () => {
       try {
         if (!session?.user?.token) return;
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${session.user.token}`,
-          },
+          headers: { Authorization: `Bearer ${session.user.token}` },
         });
-        if (!res.ok) {
-          setUser(null);
-          return;
-        }
+        if (!res.ok) { setUser(null); return; }
         const currentUser = await res.json();
         setUser(currentUser || null);
-      } catch (err) {
-        setUser(null);
-      }
+      } catch (err) { setUser(null); console.error("Error fetching user:", err); }
     };
-
-    if (session) {
-      fetchUser();
-    }
+    if (session) { fetchUser(); }
   }, [session]);
   // Notificación simple (puedes mejorarla con un modal o toast)
 function showNotification(msg: string, type: "success" | "error") {
@@ -89,6 +87,15 @@ function showNotification(msg: string, type: "success" | "error") {
     })
   );
 }
+if (activeTab === 'clavesjuegos') {
+            // Asegurarse que juegoId es un número y otros campos tienen el formato correcto
+            dataToSend = dataToSend.map((row: any) => {
+              const newRow = { ...row };
+              if (newRow.juego_id) newRow.juego_id = Number(newRow.juego_id);
+              // Aquí podrías validar 'estado' si es necesario
+              return newRow;
+            });
+          }
     if (activeTab === 'juegos') {
       const arrayFields = [
         'descripcion',
@@ -165,23 +172,43 @@ function showNotification(msg: string, type: "success" | "error") {
     };
 
     fetchOptions();
-  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
+    const fetchGameOptionsForClaves = async () => {
       try {
-        const data = await fetchUsuarios();
-        const currentUser = data.find((u: users) => u.email === session?.user?.email);
-        setUser(currentUser || null);
-      } catch (err) {
-        console.log(err);
+        if (!session?.user?.token) return;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/juegos`, {
+          headers: { Authorization: `Bearer ${session.user.token}` },
+        });        
+        if (!res.ok) throw new Error(`Failed to fetch games for claves dropdown: ${res.status}`);
+        const gamesData: any[] = await res.json();
+        if (Array.isArray(gamesData)) {
+          setAllGamesForClaves(gamesData as GameForDropdown[]);
+        } else {
+          setAllGamesForClaves([]); // Asegurarse de que sea un array si la respuesta no lo es
+        }
+      } catch (error) {
+        console.error('Error fetching games for claves:', error);
+        setAllGamesForClaves([]);
       }
     };
+    fetchGameOptionsForClaves();
+  }, [session]); // Añadir session como dependencia
 
-    if (session) {
-      fetchData();
-    }
-  }, [session]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const data = await fetchUsuarios(); // Esta llamada podría estar causando el 403 si el usuario no es ADMIN
+  //       const currentUser = data.find((u: users) => u.email === session?.user?.email);
+  //       setUser(currentUser || null); // Esto es redundante si el useEffect de arriba (fetchUser) ya lo hace
+  //     } catch (err) {
+  //       console.log("Error en useEffect que llama a fetchUsuarios:", err);
+  //     }
+  //   };
+
+  //   if (session) {
+  //     fetchData();
+  //   }
+  // }, [session]);
 
   // Cargar datos según la pestaña activa
   useEffect(() => {
@@ -267,6 +294,11 @@ function showNotification(msg: string, type: "success" | "error") {
       password: "Ejemplo: contraseña123",
       role: "Ejemplo: user",
     },
+    clavesjuegos: {
+      clave: "XXXXX-XXXXX-XXXXX-XXXXX",
+      juego_id: "ID del Juego (número)", // Campo para el ID numérico del juego
+      estado: "libre / pendiente / comprado / devuelto",
+    },
   };
 
   // Manejar la selección de un registro
@@ -304,192 +336,366 @@ function showNotification(msg: string, type: "success" | "error") {
 
   const handleAdd = async (newItem: any) => {
     try {
-      if (!activeTab) {
-        throw new Error('No se ha seleccionado una tabla activa');
+      if (!activeTab || !session?.user?.token) {
+        showNotification("No se ha seleccionado una tabla activa o el usuario no está autenticado.", "error");
+        return;
       }
       const requiredFields = Object.keys(placeholders[activeTab] || {});
-      for (const field of requiredFields) {
-        if (!newItem[field]) {
-          throw new Error(`El campo "${field}" es obligatorio`);
+      
+      const itemToAdd = { ...newItem };
+      let dataToSend: any;
+
+      if (activeTab === 'clavesjuegos') {
+        // Validación específica para clavesjuegos
+        if (!itemToAdd.clave || String(itemToAdd.clave).trim() === '') {
+          showNotification("El campo 'clave' es obligatorio.", "error");
+          return;
         }
-      }
-      const formattedItem = { ...newItem };
-      if (activeTab === 'users' && formattedItem.password) {
-        formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
-      }
-      if (activeTab === 'juegos') {
-        const arrayFields = [
-          'descripcion',
-          'idiomas',
-          'imagen_de_portada',
-          'video',
-          'requisitos_del_sistema',
-          'link',
-        ];
-        arrayFields.forEach((field) => {
-          if (formattedItem[field] && typeof formattedItem[field] === 'string') {
-            formattedItem[field] = formattedItem[field].split(',').map((item: string) => item.trim());
+        if (itemToAdd.juego_id === undefined || itemToAdd.juego_id === null || String(itemToAdd.juego_id).trim() === '') {
+          showNotification("Debe seleccionar un juego para la clave.", "error");
+          return;
+        }
+        const payload: any = {
+          clave: itemToAdd.clave,
+          estado: itemToAdd.estado || 'libre', // Si estado no viene, se pone 'libre' por defecto
+          juego_id: Number(itemToAdd.juego_id) // itemToAdd.juego_id ya debería ser un número por handleChange
+        };
+        dataToSend = payload;
+      } else {
+        // Procesamiento para otras pestañas
+        if (activeTab === 'users' && itemToAdd.password) {
+          itemToAdd.password = await bcrypt.hash(itemToAdd.password, 10);
+        }
+
+        // Validación genérica para otras pestañas (si aplica)
+        for (const field of requiredFields) {
+          if (!itemToAdd[field] && field !== 'juego_id') { // No validar juego_id aquí ya que es específico de clavesjuegos
+            showNotification(`El campo "${field}" es obligatorio para ${activeTab}.`, "error");
+            return;
           }
-        });
+        }
+        if (activeTab === 'juegos') {
+          const arrayFields = [
+            'descripcion', 'idiomas', 'imagen_de_portada', 'video',
+            'requisitos_del_sistema', 'link',
+          ];
+          arrayFields.forEach((field) => {
+            if (itemToAdd[field] && typeof itemToAdd[field] === 'string') {
+              itemToAdd[field] = itemToAdd[field].split(',').map((s: string) => s.trim());
+            }
+          });
+          // Asegurar que los campos de ID de relación son strings si existen
+          ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach(field => {
+            // El backend para juegos espera estos IDs como números.
+            // El formulario ya los guarda como números debido a handleChange.
+            // Si por alguna razón llegaran como strings, los convertimos.
+            if (itemToAdd[field] !== undefined && itemToAdd[field] !== null && typeof itemToAdd[field] === 'string' && !isNaN(Number(itemToAdd[field]))) {
+                itemToAdd[field] = Number(itemToAdd[field]);
+            }
+          });
+        }
+        const { id, ...rest } = itemToAdd; // Excluir 'id' para la creación
+        dataToSend = rest;
       }
-      if (activeTab === 'users' && formattedItem.password) {
-        formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
-      }
-      const { id, ...dataToSend } = formattedItem;
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.token}`,
+          Authorization: `Bearer ${session.user.token}`,
         },
         body: JSON.stringify(dataToSend),
       });
+
       if (!res.ok) {
-        throw new Error('Error al agregar el registro');
+        const errorBody = await res.json().catch(() => ({ message: 'Error al agregar el registro.' }));
+        throw new Error(errorBody.message || 'Error al agregar el registro');
       }
-      const updatedData = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
-        headers: {
-          Authorization: `Bearer ${session?.user?.token}`,
-        },
+
+      const updatedDataResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
+        headers: { Authorization: `Bearer ${session.user.token}` },
       });
-      const result = await updatedData.json();
-      setData(result);
+      const result = await updatedDataResponse.json();
+      setData(Array.isArray(result) ? result : []);
       setIsAdding(false);
+      showNotification("Registro agregado correctamente.", "success");
+
     } catch (error) {
       console.error('Error al agregar el registro:', error);
+      if (error instanceof Error) {
+        showNotification(`Error: ${error.message}`, "error");
+      } else {
+        showNotification("Ocurrió un error desconocido al agregar.", "error");
+      }
     }
   };
 
-  const handleEdit = async (updatedItem: any) => {
-  try {
-    if (!activeTab) {
-      throw new Error('No se ha seleccionado una tabla activa');
-    }
+  const handleEdit = async (itemToUpdate: any) => {
+    try {
+      if (!activeTab || !session?.user?.token) {
+        showNotification("No se ha seleccionado una tabla activa o el usuario no está autenticado.", "error");
+        return;
+      }
 
-    if (activeTab === 'carrito') {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/carrito/admin/${updatedItem.id}`, {
+      let endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}/${itemToUpdate.id}`;
+      let bodyToUpdate: any;
+      const { id, ...dataFromForm } = itemToUpdate; // Datos del formulario sin el ID
+
+      if (activeTab === 'clavesjuegos') {
+        const payload: any = {};
+        // Comparar con editData (los datos originales antes de la edición)
+        if (dataFromForm.clave !== undefined && dataFromForm.clave !== editData.clave) {
+          payload.clave = dataFromForm.clave;
+        }
+        if (dataFromForm.estado !== undefined && dataFromForm.estado !== editData.estado) {
+          payload.estado = dataFromForm.estado;
+        }
+        
+        const newJuegoId = dataFromForm.juego_id ? Number(dataFromForm.juego_id) : undefined;
+        const originalJuegoId = editData.juego ? Number(editData.juego.id) : (editData.juego_id ? Number(editData.juego_id) : undefined);
+
+        if (newJuegoId !== undefined && newJuegoId !== originalJuegoId) {
+          payload.juego_id = newJuegoId; 
+        } else if (newJuegoId === undefined && originalJuegoId !== undefined && dataFromForm.juego_id === '') { 
+          // payload.juego_id = null; // O manejar según el backend espere para desasociar
+          // Por ahora, si se deselecciona, no se envía, a menos que el backend lo requiera explícitamente como null.
+        }
+        
+        if (Object.keys(payload).length === 0) {
+          showNotification("No hay cambios para guardar.", "success"); // Usar success o info
+          setIsEditing(false);
+          setEditData(null);
+          return;
+        }
+        bodyToUpdate = JSON.stringify(payload);
+        endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/clavesjuegos/${id}`;
+      } else if (activeTab === 'carrito') {
+        endpoint = `${process.env.NEXT_PUBLIC_BACKEND_URL}/carrito/admin/${id}`;
+        bodyToUpdate = JSON.stringify({ cantidad: dataFromForm.cantidad });
+      } else { 
+        let processedData = { ...dataFromForm };
+
+        if (activeTab === 'juegos') {
+          const idFields = ['categoria', 'plataforma', 'editorial', 'desarrollador'];
+          idFields.forEach((field) => {
+            const value = processedData[field];
+            if (value !== undefined && value !== null) {
+              if (typeof value === 'string' && String(value).trim() !== '' && !isNaN(Number(value))) {
+                processedData[field] = Number(value);
+              } else if (typeof value === 'object' && value.id !== undefined && !isNaN(Number(value.id))) {
+                processedData[field] = Number(value.id);
+              } else if (typeof value !== 'number') {
+                // Si el valor no es un número, ni un string numérico, ni un objeto con ID numérico,
+                // y el campo no está vacío, se considera inválido para un ID y se elimina o se advierte.
+                // Si es un string vacío, se elimina para no enviar un ID inválido.
+                if (String(value).trim() === '') {
+                    delete processedData[field];
+                } else {
+                    console.warn(`Campo ${field} con valor '${value}' no es un ID numérico válido para la actualización. Se omitirá.`);
+                    delete processedData[field];
+                }
+              }
+              // Si ya es un número, se deja como está.
+            } else {
+              // Si es undefined, null, o un string vacío después de trim, se elimina para no enviar IDs vacíos/inválidos.
+              delete processedData[field]; 
+            }
+          });
+
+          const arrayFields = [
+            'descripcion', 'idiomas', 'imagen_de_portada', 'video',
+            'requisitos_del_sistema', 'link',
+          ];
+          arrayFields.forEach((field) => {
+            if (processedData[field] && typeof processedData[field] === 'string') {
+              processedData[field] = processedData[field].split(',').map((s: string) => s.trim());
+            }
+          });
+        }
+
+        if (activeTab === 'users' && processedData.password) {
+          if (typeof processedData.password === 'string' && !processedData.password.startsWith('$2a$') && !processedData.password.startsWith('$2b$')) {
+            processedData.password = await bcrypt.hash(processedData.password, 10);
+          } else if (processedData.password.startsWith('$2a$') || processedData.password.startsWith('$2b$')) {
+            // Si es un hash (probablemente el original cargado), no se envía para evitar re-hashear o enviar innecesariamente.
+            // Esto asume que el formulario no muestra el hash. Si el campo password está vacío, no se envía.
+            delete processedData.password;
+          }
+        } else if (activeTab === 'users' && !processedData.password) {
+           delete processedData.password; 
+        }
+        bodyToUpdate = JSON.stringify(processedData);
+      }
+
+      const res = await fetch(endpoint, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user?.token}`,
+          Authorization: `Bearer ${session.user.token}`,
         },
-        body: JSON.stringify({ cantidad: updatedItem.cantidad }),
+        body: bodyToUpdate,
       });
 
-      if (!res.ok) throw new Error('Error al actualizar la cantidad');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: `Error al actualizar el registro en ${activeTab}` }));
+        console.error("Error response from backend:", errorData);
+        throw new Error(errorData.message || `Error al actualizar el registro en ${activeTab}`);
+      }
 
-      const updatedData = await res.json();
-      setData((prevData) =>
-        prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
-      );
+      const currentTabEndpoint = activeTab === 'carrito' || activeTab === 'pedidos' ? `${activeTab}/admin` : activeTab;
+      const updatedDataResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${currentTabEndpoint}`, {
+        headers: { Authorization: `Bearer ${session.user.token}` },
+      });
+      const result = await updatedDataResponse.json();
+      setData(Array.isArray(result) ? result : []);
       setIsEditing(false);
       setEditData(null);
-      return;
+      showNotification("Registro actualizado correctamente.", "success");
+
+    } catch (error) {
+      console.error(`❌ Error al actualizar el registro en ${activeTab}:`, error);
+      if (error instanceof Error) {
+          showNotification(`Error: ${error.message}`, "error");
+      } else {
+          showNotification("Ocurrió un error desconocido al actualizar.", "error");
+      }
     }
-
-    const formattedItem = { ...updatedItem };
-
-    if (activeTab === 'juegos') {
-      // Campos que deben enviarse como string
-      const stringIdFields = ['categoria', 'plataforma', 'editorial', 'desarrollador'];
-
-      stringIdFields.forEach((field) => {
-        const value = formattedItem[field];
-        if (value && typeof value === 'object' && value.id !== undefined) {
-          formattedItem[field] = String(value.id);
-        } else if (typeof value === 'number') {
-          formattedItem[field] = String(value);
-        } else if (typeof value === 'string') {
-          // Ya está bien
-        } else {
-          // Si no tiene valor válido, mejor eliminarlo
-          delete formattedItem[field];
-        }
-      });
-
-      // Campos tipo array que vienen como string separados por coma
-      const arrayFields = [
-        'descripcion',
-        'idiomas',
-        'imagen_de_portada',
-        'video',
-        'requisitos_del_sistema',
-        'link',
-      ];
-
-      arrayFields.forEach((field) => {
-        if (formattedItem[field] && typeof formattedItem[field] === 'string') {
-          formattedItem[field] = formattedItem[field]
-            .split(',')
-            .map((item: string) => item.trim());
-        }
-      });
-    }
-
-    if (activeTab === 'users' && formattedItem.password) {
-      formattedItem.password = await bcrypt.hash(formattedItem.password, 10);
-    }
-
-    const { id, ...dataToSend } = formattedItem;
-
-    // DEBUG: Verifica que todo esté en el formato correcto antes del fetch
-    console.log('🟩 Enviando al backend:', JSON.stringify(dataToSend, null, 2));
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.user?.token}`,
-      },
-      body: JSON.stringify(dataToSend),
-    });
-
-    if (!res.ok) throw new Error('Error al actualizar el registro');
-
-    const updatedData = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${activeTab}`, {
-      headers: {
-        Authorization: `Bearer ${session?.user?.token}`,
-      },
-    });
-
-    const result = await updatedData.json();
-    setData(result);
-    setIsEditing(false);
-  } catch (error) {
-    console.error('❌ Error al actualizar el registro:', error);
-  }
-};
+  };
 
   const handleSignOut = async () => {
     await signOut();
     window.location.href = '/';
   };
 
-  const Formulario = ({ onSubmit, initialData }: { onSubmit: (data: any) => void; initialData?: any }) => {
-    const [formData, setFormData] = useState(initialData || {});
+  const Formulario = ({
+    onSubmit,
+    initialData,
+    activeTab,
+    allGames, 
+    categorias, plataformas, editoriales, desarrolladores, 
+  }: {
+    onSubmit: (data: any) => void;
+    initialData?: any;
+    activeTab: string;
+    allGames?: GameForDropdown[];
+    categorias?: categoria[];
+    plataformas?: plataforma[];
+    editoriales?: editorial[];
+    desarrolladores?: desarrollador[];
+  }) => {
+    const [formData, setFormData] = useState<any>({});
+    // State for the game search input within the clavesjuegos form
+    const [juegoSearchTerm, setJuegoSearchTerm] = useState(''); // For clavesjuegos game search
+
+    useEffect(() => {
+      let newFormData: any = {};
+      if (initialData) {
+        newFormData = { ...initialData }; 
+        if (activeTab === 'clavesjuegos') {
+          newFormData = {
+            // Start with specific fields for clavesjuegos to avoid carrying over unexpected props
+            id: initialData.id,
+            clave: initialData.clave || '',
+            estado: initialData.estado || '',
+            // Set juego_id carefully based on your provided logic
+            juego_id: (initialData.juego && typeof initialData.juego === 'object' 
+                        ? initialData.juego.id 
+                        : initialData.juego_id) || '',
+          };
+          // Ensure the 'juego' object itself is not in formData if it came from initialData
+          if (newFormData.juego) delete newFormData.juego;
+        } else if (activeTab === 'juegos') {
+          ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach(field => {
+            if (initialData[field] && typeof initialData[field] === 'object' && initialData[field].id !== undefined) {
+              newFormData[field] = initialData[field].id;
+            } else {
+              // Si initialData[field] es un número (ID directo), usarlo. Sino, string vacío.
+              newFormData[field] = typeof initialData[field] === 'number' ? initialData[field] : (initialData[field] || '');
+            }
+          });
+        }
+      } else { 
+        if (placeholders[activeTab]) {
+          Object.keys(placeholders[activeTab]).forEach(key => {
+            newFormData[key] = ''; 
+          });
+        }
+        if (activeTab === 'clavesjuegos') {
+            newFormData.clave = newFormData.clave || ''; 
+            newFormData.juego_id = newFormData.juego_id || ''; 
+            newFormData.estado = newFormData.estado || ''; 
+        }
+      }
+      setFormData(newFormData);
+      setJuegoSearchTerm(''); 
+    }, [initialData, activeTab]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
-  // Si el campo es uno de los selectores, convierte el valor a número
-  if (
-    activeTab === 'juegos' &&
-    ['categoria', 'plataforma', 'editorial', 'desarrollador'].includes(name)
-  ) {
-    setFormData({ ...formData, [name]: Number(value) });
-  } else {
-    setFormData({ ...formData, [name]: value });
-  }
-};
+      const { name, value } = e.target;
+      if ((activeTab === 'juegos' && ['categoria', 'plataforma', 'editorial', 'desarrollador'].includes(name)) ||
+          (activeTab === 'clavesjuegos' && name === 'juego_id')) {
+        setFormData({ ...formData, [name]: value ? Number(value) : '' });
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       onSubmit(formData);
     };
 
+    // Memoized and filtered list of games for the clavesjuegos dropdown
+    // This hook recalculates the filtered list whenever allGames or juegoSearchTerm changes
+    const filteredJuegosParaDropdown = React.useMemo(() => {
+      if (!allGames || !Array.isArray(allGames)) return [];
+      const searchTermLower = juegoSearchTerm.toLowerCase();
+      if (!searchTermLower) return allGames.slice(0, 100); // Show initial list (limited)
+
+      return allGames.filter(game => {
+        const nombre = game.nombre?.toLowerCase() || '';
+        const plataformaNombre = game.plataforma?.nombre?.toLowerCase() || '';
+        const dispositivoNombre = game.dispositivo?.toLowerCase() || '';
+        return nombre.includes(searchTermLower) || plataformaNombre.includes(searchTermLower) || dispositivoNombre.includes(searchTermLower);
+      });
+      
+    }, [allGames, juegoSearchTerm]);
+
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Renderizado específico para la tabla "carrito" */}
-        {activeTab === 'carrito' ? (
+        {activeTab === 'clavesjuegos' ? (
+          <>
+            <div>
+              <label htmlFor="clave" className="block text-sm font-medium text-gray-700">Clave</label>
+              <input type="text" name="clave" id="clave" value={formData.clave || ''} onChange={handleChange} className="border p-2 w-full" placeholder={placeholders.clavesjuegos?.clave} />
+            </div>
+            <div>
+              <label htmlFor="juegoSearch" className="block text-sm font-medium text-gray-700">Buscar Juego</label>
+              <input type="text" name="juegoSearch" id="juegoSearch" value={juegoSearchTerm} onChange={(e) => setJuegoSearchTerm(e.target.value)} className="border p-2 w-full mb-2" placeholder="Buscar por nombre o plataforma..." />
+            </div>
+            <div>
+              <label htmlFor="juego_id" className="block text-sm font-medium text-gray-700">Juego</label>
+              <select name="juego_id" id="juego_id" value={formData.juego_id || ''} onChange={handleChange} className="border p-2 w-full">
+                <option value="">Seleccionar Juego</option>
+                {filteredJuegosParaDropdown.map((game: GameForDropdown) => (
+                  <option key={game.id} value={game.id}>
+                    {game.nombre} - {game.plataforma?.nombre || 'N/P'} - {game.dispositivo || 'N/D'}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="estado" className="block text-sm font-medium text-gray-700">Estado</label>
+              <select name="estado" id="estado" value={formData.estado || ''} onChange={handleChange} className="border p-2 w-full">
+                <option value="">Seleccionar Estado</option>
+                <option value="libre">Libre</option>
+                <option value="comprado">Comprado</option>
+                <option value="devuelto">Devuelto</option>
+                <option value="pendiente">Pendiente</option>
+              </select>
+            </div>
+          </>
+        ) : activeTab === 'carrito' ? (
           <div>
             <label htmlFor="cantidad" className="block text-sm font-medium text-gray-700">
               Cantidad
@@ -503,8 +709,7 @@ function showNotification(msg: string, type: "success" | "error") {
               className="border p-2 w-full"
             />
           </div>
-        ) : (
-          // Renderizado para otras tablas, incluyendo "juegos"
+        ) : ( 
           Object.keys(placeholders[activeTab] || {}).map((key) => (
             <div key={key}>
               <label htmlFor={key} className="block text-sm font-medium text-gray-700">
@@ -512,20 +717,20 @@ function showNotification(msg: string, type: "success" | "error") {
               </label>
               {activeTab === 'juegos' && ['categoria', 'plataforma', 'editorial', 'desarrollador'].includes(key) ? (
                 <select
-  id={key}
-  name={key}
-  value={formData[key] || ''}
-  onChange={handleChange}
-  className="border p-2 w-full"
->
-  <option value="">Seleccionar {key}</option>
-  {(key === 'categoria' ? categorias : key === 'plataforma' ? plataformas : key === 'editorial' ? editoriales : desarrolladores).map(
-    (option) => (
-      <option key={option.id} value={option.id}>
-        {option.nombre}
-      </option>
-  ))}
-</select>
+                  id={key}
+                  name={key}
+                  value={formData[key] || ''} 
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                >
+                  <option value="">Seleccionar {key}</option>
+                  {(key === 'categoria' ? categorias : key === 'plataforma' ? plataformas : key === 'editorial' ? editoriales : desarrolladores)?.map(
+                    (option: any) => ( // Use 'any' or a more specific type if available for these options
+                      <option key={option.id} value={option.id}>
+                        {option.nombre}
+                      </option>
+                  ))}
+                </select>
               ) : (
                 <input
                   id={key}
@@ -677,7 +882,7 @@ function showNotification(msg: string, type: "success" | "error") {
 
                 {/* Tabs */}
                 <nav className="flex flex-wrap gap-2 mb-4">
-                  {['juegos', 'categorias', 'editoriales', 'desarrolladores', 'plataformas', 'carrito', 'users'].map(
+                  {['juegos', 'categorias', 'editoriales', 'desarrolladores', 'plataformas','clavesjuegos', 'carrito', 'users'].map(
                     (tab) => (
                       <button
                         key={tab}
@@ -825,9 +1030,12 @@ function showNotification(msg: string, type: "success" | "error") {
     <div className="max-h-[80vh] overflow-y-auto p-2">
       <Formulario
         onSubmit={(data) => {
-          handleAdd(data);
+          handleAdd(data); // Pasar solo un argumento
           setIsAdding(false);
         }}
+        activeTab={activeTab}
+        allGames={allGamesForClaves}
+        categorias={categorias} plataformas={plataformas} editoriales={editoriales} desarrolladores={desarrolladores}
       />
     </div>
   </Modal>
@@ -839,9 +1047,12 @@ function showNotification(msg: string, type: "success" | "error") {
       <Formulario
         initialData={editData}
         onSubmit={(data) => {
-          handleEdit({ ...editData, ...data });
+          handleEdit({ ...editData, ...data }); // Pasar solo un argumento
           setIsEditing(false);
         }}
+        activeTab={activeTab}
+        allGames={allGamesForClaves}
+        categorias={categorias} plataformas={plataformas} editoriales={editoriales} desarrolladores={desarrolladores}
       />
     </div>
   </Modal>
