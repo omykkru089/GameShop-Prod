@@ -475,37 +475,42 @@ if (activeTab === 'clavesjuegos') {
       } else { 
         let processedData = { ...dataFromForm };
 
-       if (activeTab === "juegos") {
-  // Convierte los campos relacionados a string (id) siempre
-  ["categoria", "plataforma", "editorial", "desarrollador"].forEach((field) => {
-    if (itemToUpdate[field]?.id !== undefined) {
-      itemToUpdate[field] = String(itemToUpdate[field].id);
-    } else if (typeof itemToUpdate[field] === "number") {
-      itemToUpdate[field] = String(itemToUpdate[field]);
-    } else if (typeof itemToUpdate[field] === "string") {
-      itemToUpdate[field] = itemToUpdate[field];
-    } else {
-      itemToUpdate[field] = "";
-    }
-  });
+      if (activeTab === "juegos") {
+    // Convierte los campos relacionados a string (id) SIEMPRE
+    ["categoria", "plataforma", "editorial", "desarrollador"].forEach((field) => {
+      if (processedData[field] && typeof processedData[field] === "object" && processedData[field].id !== undefined) {
+        processedData[field] = String(processedData[field].id);
+      } else if (typeof processedData[field] === "number") {
+        processedData[field] = String(processedData[field]);
+      } else if (typeof processedData[field] === "string") {
+        // ya es string, no hacer nada
+      } else {
+        processedData[field] = "";
+      }
+    });
 
-  // Si tienes arrays que pueden venir como string, conviértelos igual que en handleAdd
-  const arrayFields = [
-    "descripcion",
-    "idiomas",
-    "imagen_de_portada",
-    "video",
-    "requisitos_del_sistema",
-    "link",
-  ];
-  arrayFields.forEach((field) => {
-    if (itemToUpdate[field] && typeof itemToUpdate[field] === "string") {
-      itemToUpdate[field] = itemToUpdate[field]
-        .split(",")
-        .map((s: string) => s.trim());
-    }
-  });
-}
+    // Si tienes arrays que pueden venir como string, conviértelos igual que en handleAdd
+    const arrayFields = [
+      "descripcion",
+      "idiomas",
+      "imagen_de_portada",
+      "video",
+      "requisitos_del_sistema",
+      "link",
+    ];
+    arrayFields.forEach((field) => {
+      if (processedData[field] && typeof processedData[field] === "string") {
+        processedData[field] = processedData[field]
+          .split(",")
+          .map((s: string) => s.trim());
+      }
+    });
+  }
+
+  // Elimina el id antes de enviar el PATCH
+  delete processedData.id;
+
+  bodyToUpdate = JSON.stringify(processedData);
 
         if (activeTab === 'users' && processedData.password) {
           if (typeof processedData.password === 'string' && !processedData.password.startsWith('$2a$') && !processedData.password.startsWith('$2b$')) {
