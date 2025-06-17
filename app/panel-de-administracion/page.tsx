@@ -475,29 +475,37 @@ if (activeTab === 'clavesjuegos') {
       } else { 
         let processedData = { ...dataFromForm };
 
-       if (activeTab === 'juegos') {
-        // Adaptado para que funcione igual que en handleAdd
-        const arrayFields = [
-          'descripcion', 'idiomas', 'imagen_de_portada', 'video',
-          'requisitos_del_sistema', 'link',
-        ];
-        arrayFields.forEach((field) => {
-          if (processedData[field] && typeof processedData[field] === 'string') {
-            processedData[field] = processedData[field].split(',').map((s: string) => s.trim());
-          }
-        });
-        // Igual que en handleAdd: convertir a número si es string numérico
-        ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach(field => {
-          if (
-            processedData[field] !== undefined &&
-            processedData[field] !== null &&
-            typeof processedData[field] === 'string' &&
-            !isNaN(Number(processedData[field]))
-          ) {
-            processedData[field] = Number(processedData[field]);
-          }
-        });
-      }
+       if (activeTab === "juegos") {
+  // Convierte los campos relacionados a string (id) siempre
+  ["categoria", "plataforma", "editorial", "desarrollador"].forEach((field) => {
+    if (itemToUpdate[field]?.id !== undefined) {
+      itemToUpdate[field] = String(itemToUpdate[field].id);
+    } else if (typeof itemToUpdate[field] === "number") {
+      itemToUpdate[field] = String(itemToUpdate[field]);
+    } else if (typeof itemToUpdate[field] === "string") {
+      itemToUpdate[field] = itemToUpdate[field];
+    } else {
+      itemToUpdate[field] = "";
+    }
+  });
+
+  // Si tienes arrays que pueden venir como string, conviértelos igual que en handleAdd
+  const arrayFields = [
+    "descripcion",
+    "idiomas",
+    "imagen_de_portada",
+    "video",
+    "requisitos_del_sistema",
+    "link",
+  ];
+  arrayFields.forEach((field) => {
+    if (itemToUpdate[field] && typeof itemToUpdate[field] === "string") {
+      itemToUpdate[field] = itemToUpdate[field]
+        .split(",")
+        .map((s: string) => s.trim());
+    }
+  });
+}
 
         if (activeTab === 'users' && processedData.password) {
           if (typeof processedData.password === 'string' && !processedData.password.startsWith('$2a$') && !processedData.password.startsWith('$2b$')) {
