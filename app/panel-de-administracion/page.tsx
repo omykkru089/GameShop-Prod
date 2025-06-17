@@ -475,43 +475,29 @@ if (activeTab === 'clavesjuegos') {
       } else { 
         let processedData = { ...dataFromForm };
 
-        if (activeTab === 'juegos') {
-          const idFields = ['categoria', 'plataforma', 'editorial', 'desarrollador'];
-          idFields.forEach((field) => {
-            const value = processedData[field];
-            if (value !== undefined && value !== null) {
-              if (typeof value === 'string' && String(value).trim() !== '' && !isNaN(Number(value))) {
-                processedData[field] = Number(value);
-              } else if (typeof value === 'object' && value.id !== undefined && !isNaN(Number(value.id))) {
-                processedData[field] = Number(value.id);
-              } else if (typeof value !== 'number') {
-                // Si el valor no es un número, ni un string numérico, ni un objeto con ID numérico,
-                // y el campo no está vacío, se considera inválido para un ID y se elimina o se advierte.
-                // Si es un string vacío, se elimina para no enviar un ID inválido.
-                if (String(value).trim() === '') {
-                    delete processedData[field];
-                } else {
-                    console.warn(`Campo ${field} con valor '${value}' no es un ID numérico válido para la actualización. Se omitirá.`);
-                    delete processedData[field];
-                }
-              }
-              // Si ya es un número, se deja como está.
-            } else {
-              // Si es undefined, null, o un string vacío después de trim, se elimina para no enviar IDs vacíos/inválidos.
-              delete processedData[field]; 
-            }
-          });
-
-          const arrayFields = [
-            'descripcion', 'idiomas', 'imagen_de_portada', 'video',
-            'requisitos_del_sistema', 'link',
-          ];
-          arrayFields.forEach((field) => {
-            if (processedData[field] && typeof processedData[field] === 'string') {
-              processedData[field] = processedData[field].split(',').map((s: string) => s.trim());
-            }
-          });
-        }
+       if (activeTab === 'juegos') {
+        // Adaptado para que funcione igual que en handleAdd
+        const arrayFields = [
+          'descripcion', 'idiomas', 'imagen_de_portada', 'video',
+          'requisitos_del_sistema', 'link',
+        ];
+        arrayFields.forEach((field) => {
+          if (processedData[field] && typeof processedData[field] === 'string') {
+            processedData[field] = processedData[field].split(',').map((s: string) => s.trim());
+          }
+        });
+        // Igual que en handleAdd: convertir a número si es string numérico
+        ['categoria', 'plataforma', 'editorial', 'desarrollador'].forEach(field => {
+          if (
+            processedData[field] !== undefined &&
+            processedData[field] !== null &&
+            typeof processedData[field] === 'string' &&
+            !isNaN(Number(processedData[field]))
+          ) {
+            processedData[field] = Number(processedData[field]);
+          }
+        });
+      }
 
         if (activeTab === 'users' && processedData.password) {
           if (typeof processedData.password === 'string' && !processedData.password.startsWith('$2a$') && !processedData.password.startsWith('$2b$')) {
